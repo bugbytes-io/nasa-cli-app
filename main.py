@@ -1,10 +1,13 @@
+from datetime import datetime
 from io import BytesIO
 import os
 import typer
 import requests
-from datetime import datetime
-from config import API_URL, IMAGE_DIR
 from PIL import Image
+
+from config import API_URL, IMAGE_DIR
+from helpers import url_query_params, get_image, save_image_to_filesystem
+
 
 app = typer.Typer()
 
@@ -14,38 +17,44 @@ default_date = typer.Argument(
 )
 
 @app.command()
-def fetch_image(date: datetime = default_date, save: bool = False):
+def fetch_image(
+    date: datetime = default_date, 
+    save: bool = False,
+    start: datetime = typer.Option(None),
+    end: datetime = typer.Option(None),
+):
     print("Sending API request...")
-    dt = str(date.date())
+    query_params = url_query_params(date, start, end)
 
     # add the 'date' query parameter to the NASA API call
-    url_for_date = f"{API_URL}&date={dt}"
-    response = requests.get(url_for_date)
+    response = requests.get(API_URL, params=query_params)
 
     # raise error if request fails
     response.raise_for_status()
 
     # extract url and title from JSON response
     data = response.json()
-    url = data['url']
-    title = data['title']
 
-    # fetch the Image from the url, and create PIL.Image object
-    print("Fetching Image...")
-    image_response = requests.get(url)
-    image = Image.open(BytesIO(image_response.content))
+    # if the response data is a dict, convert to single-element list for convenience
+    if isinstance(data, dict):
+        data = [data]
 
-    # show image on user's desktop
-    image.show()
+    for resp in data:
+        url = resp['url']
+        title = resp['title']
 
-    # save image to filesystem if save flag is True
-    if save:
-        if not IMAGE_DIR.exists():
-            os.mkdir(IMAGE_DIR)
-        image_name = f"{title}.{image.format}"
-        image.save(IMAGE_DIR / image_name, image.format)
+        # fetch the Image from the url, and create PIL.Image object
+        print("Fetching Image...")
+        image = get_image(url)
 
-    image.close()
+        # show image on user's desktop
+        image.show()
+
+        # save image to filesystem if save flag is True
+        if save:
+            save_image_to_filesystem(image, title)
+
+        image.close()
     
 
 if __name__ == '__main__':
