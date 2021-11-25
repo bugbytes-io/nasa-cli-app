@@ -1,11 +1,8 @@
 from datetime import datetime
-from io import BytesIO
-import os
 import typer
 import requests
-from PIL import Image
 
-from config import API_URL, IMAGE_DIR
+from config import API_URL
 from helpers import url_query_params, get_image, save_image_to_filesystem
 
 
