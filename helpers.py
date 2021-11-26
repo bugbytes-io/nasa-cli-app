@@ -2,7 +2,6 @@ from io import BytesIO
 import os
 from typing import Dict
 from PIL import Image
-import requests
 from config import IMAGE_DIR
 
 
@@ -16,9 +15,9 @@ def url_query_params(datetime, start, end) -> Dict:
     else:
         return {'date': str(datetime.date())}
 
-def get_image(url: str) -> Image:
+async def get_image(client, url: str) -> Image:
     """ Makes API request to Image endpoint, and converts/returns Pillow Image """
-    image_response = requests.get(url)
+    image_response = await client.get(url)
     image = Image.open(BytesIO(image_response.content))
     return image
 
