@@ -37,6 +37,10 @@ def fetch_image(
         data = [data]
 
     for resp in data:
+        if resp['media_type'] != 'image':
+            print(f"No image available for {resp['date']}")
+            continue
+        
         url = resp['url']
         title = resp['title']
 
