@@ -27,6 +27,11 @@ def fetch_image(date: datetime = default_date, save: bool = False):
 
     # extract url and title from JSON response
     data = response.json()
+
+    if data['media_type'] != 'image':
+        print(f"No image available for {data['date']}")
+        return
+
     url = data['url']
     title = data['title']
 
