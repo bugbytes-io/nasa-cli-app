@@ -52,8 +52,13 @@ def fetch_image(
         data = [data]
 
     # extract URLs and titles from the JSON data
-    urls = [d['url'] for d in data]
-    titles = [d['title'] for d in data]
+    urls = [d['url'] for d in data if d['media_type'] == 'image']
+    titles = [d['title'] for d in data if d['media_type'] == 'image']
+
+    # print out dates where no image was available
+    for resp in data:
+        if resp['media_type'] != 'image':
+            print(f"No image available for {resp['date']}")
 
     # run async/concurrent get_images code and collect Image objects after completion
     images = asyncio.run(get_images(urls))
